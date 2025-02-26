@@ -3,9 +3,12 @@ from sqlalchemy.orm import sessionmaker
 from backend.app.models.models import Base
 import os
 
-# Use DATABASE_URL for Heroku, fallback to local for development
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:password@localhost/brandconnect_db")
-engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True, pool_pre_ping=True)  # Enable echo for debugging, pool_pre_ping for connection health
+# Use DATABASE_URL from Heroku, required for production (no fallback to localhost)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set. Required for Heroku deployment.")
+
+engine = create_engine(DATABASE_URL, echo=True, pool_pre_ping=True, connect_args={"sslmode": "require"})  # Add SSL for Heroku
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
