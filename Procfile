@@ -1,1 +1,1 @@
-web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker backend.main:app --timeout 0
+web: gunicorn -w 2 -k uvicorn.workers.UvicornWorker backend.main:app --timeout 0 --log-level info
