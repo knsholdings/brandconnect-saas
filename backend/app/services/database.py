@@ -3,10 +3,12 @@ from sqlalchemy.orm import sessionmaker
 from backend.app.models.models import Base
 import os
 
-# Use DATABASE_URL from Heroku, required for production (no fallback to localhost)
+# Get DATABASE_URL and transform postgres:// to postgresql:// for SQLAlchemy compatibility
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set. Required for Heroku deployment.")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(DATABASE_URL, echo=True, pool_pre_ping=True, connect_args={"sslmode": "require"})  # Add SSL for Heroku
 
