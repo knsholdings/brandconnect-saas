@@ -1,25 +1,12 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from backend.app.models.models import Base
 import os
+from sqlalchemy import create_engine
 
-# Get DATABASE_URL and transform postgres:// to postgresql:// for SQLAlchemy compatibility
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set. Required for Heroku deployment.")
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# Get the Heroku DATABASE_URL from environment variables
+database_url = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL, echo=True, pool_pre_ping=True, connect_args={"sslmode": "require"})  # Add SSL for Heroku
+# Replace 'postgres://' with 'postgresql://' for SQLAlchemy compatibility
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# Create tables if they don't exist
-Base.metadata.create_all(bind=engine)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Create the SQLAlchemy engine
+engine = create_engine(database_url)
